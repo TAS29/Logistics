@@ -8,8 +8,8 @@ class FintechBloc extends Bloc<FintechEvent, FintechState> {
   }
 
   Future<void> _addSallary(AddSalaryEvent event, Emitter<FintechState> emitter) async {
-    double bal = state.accountBalance + event.updatedBalance;
-    List<String> l = [...state.transactionHistory, ...event.updatedHistory];
-    emitter(state.copyWith(accountBalance: bal, transactionHistory: l));
+    double balance = state.accountBalance + event.updatedBalance;
+    List<String> list = [...state.transactionHistory, ...event.updatedHistory];
+    emitter(state.copyWith(accountBalance: balance, transactionHistory: list));
   }
 }
