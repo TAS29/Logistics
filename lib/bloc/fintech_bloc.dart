@@ -4,10 +4,10 @@ import 'fintech_event.dart';
 
 class FintechBloc extends Bloc<FintechEvent, FintechState> {
   FintechBloc() : super(const FintechState()) {
-    on<AddSalaryEvent>(_addSallary);
+    on<AddSalaryEvent>(_addSalary);
   }
 
-  Future<void> _addSallary(AddSalaryEvent event, Emitter<FintechState> emitter) async {
+  Future<void> _addSalary(AddSalaryEvent event, Emitter<FintechState> emitter) async {
     double balance = state.accountBalance + event.updatedBalance;
     List<String> list = [...state.transactionHistory, ...event.updatedHistory];
     emitter(state.copyWith(accountBalance: balance, transactionHistory: list));
