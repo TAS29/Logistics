@@ -30,6 +30,7 @@ class Value {
     String transporterName;
     String logo;
     String? suggestion;
+    String? locationName;
 
     Value({
         required this.searchScore,
@@ -37,13 +38,15 @@ class Value {
         required this.transporterName,
         required this.logo,
         this.suggestion,
+        required this.locationName,
     });
 
     factory Value.fromJson(Map<String, dynamic> json) => Value(
-        searchScore: json["@search.score"]?.toDouble(),
-        transporterId: json["transporter_id"],
-        transporterName: json["transporter_name"],
-        logo: json["logo"],
+        searchScore: json["@search.score"]?.toDouble() ?? 0.0,
+        transporterId: json["transporter_id"]??"",
+        locationName: json["location_name"]??"",
+        transporterName: json["transporter_name"]??"",
+        logo: json["logo"]??"",
         suggestion: json["suggestion"],
     );
 

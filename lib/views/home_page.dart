@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logistics/bloc/fintech_bloc.dart';
+import 'package:logistics/bloc/fintech_event.dart';
+import 'package:logistics/bloc/fintech_state.dart';
 import 'package:logistics/constants/theme_constants.dart';
-import 'package:logistics/repo/get_search_result.dart';
-import 'package:provider/provider.dart';
+import 'package:logistics/views/search_cities_page.dart';
+import 'package:logistics/widgets/monthly_overview_dialog_widget.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -9,78 +13,93 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Controller for the search bar
-  final TextEditingController _searchController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Dismiss the keyboard when tapping outside the text field
-        FocusScope.of(context).unfocus();
+    return BlocBuilder<FintechBloc, FintechState>(
+      builder: (context, state) {
+        return _buildUI(state.accountBalance, state.transactionHistory);
       },
-      child: Scaffold(
-        backgroundColor: ThemeConstants.black,
-        appBar: AppBar(
-          title: Text('Home Page'),
-          backgroundColor: ThemeConstants.red,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Search bar with onChange listener for real-time updates
-              TextField(
-                controller: _searchController,
-                onChanged: (val) async {
-                  // Trigger API call when the user enters more than 2 characters
-                  if (val.length > 2) {
-                    await context.read<GetSearchResult>().getSearchResult(val);
-                  }
-                },
-                decoration: InputDecoration(
-                  labelText: 'Search',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.search),
-                    onPressed: () async {
-                      // Trigger API call when the search icon is pressed
-                      if (_searchController.text.length > 2) {
-                        await context.read<GetSearchResult>().getSearchResult(_searchController.text);
-                      }
-                    },
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
-              Expanded(
-                child: _buildSearchResults(),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
-  // Widget to display search results
-  Widget _buildSearchResults() {
-    if (context.watch<GetSearchResult>().data?.value.isEmpty ?? true) {
-      // Display message when no results found
-      return Center(
-        child: Text(context.watch<GetSearchResult>().data == null ? "" : 'No results found.'),
-      );
-    }
-
-    // Display search results in a ListView
-    return ListView.builder(
-      itemCount: context.watch<GetSearchResult>().data!.value.length,
-      itemBuilder: (context, index) {
-        var result = context.watch<GetSearchResult>().data!.value[index];
-        return ListTile(
-          title: Text(result.transporterName),
-          subtitle: Text(result.transporterId),
-        );
-      },
+  Widget _buildUI(double accountBalance, List<String> transactionHistory) {
+    return Scaffold(
+      backgroundColor: ThemeConstants.black,
+      appBar: AppBar(
+        title: const Text('Fintech App'),
+        backgroundColor: ThemeConstants.red,
+        actions: [
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (ctx) => SearchCitiesPage()));
+              }),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Account Balance',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: Icon(Icons.refresh),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+            Text(
+              '\$${accountBalance.toStringAsFixed(2)}',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                context.read<FintechBloc>().add(
+                      AddSalaryEvent(
+                        1000.0,
+                        ['Received \$1000 as salary'],
+                      ),
+                    );
+              },
+              icon: Icon(Icons.attach_money),
+              label: Text('Add Salary'),
+              style: ElevatedButton.styleFrom(primary: Colors.green),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                // Show monthly overview dialog
+                showMonthlyOverviewDialog(accountBalance, context);
+              },
+              icon: Icon(Icons.calendar_today),
+              label: Text('Monthly Overview'),
+              style: ElevatedButton.styleFrom(primary: Colors.blue),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Transaction History',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: transactionHistory.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(transactionHistory[index]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

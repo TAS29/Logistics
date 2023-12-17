@@ -1,21 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logistics/constants/constants.dart'; // Assuming you have a file named constants.dart
+import 'package:logistics/data/local/shared_pref_data_source.dart';
 import 'package:logistics/views/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginRepo {
-  // Method to save the logged-in status in shared preferences
-  Future<void> setLoggedIn(bool isLoggedIn) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(isLoggedInKey, isLoggedIn);
-  }
-
-  // Method to check if the user is already logged in
-  Future<bool> isLoggedIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(isLoggedInKey) ?? false;
-  }
 
   // Method to handle the login process
   Future<void> login(_formKey, emailController, passwordController, context) async {
@@ -28,14 +18,14 @@ class LoginRepo {
         );
 
         // Set the logged-in status to true and navigate to the home page
-        await setLoggedIn(true);
+        await SharedPrefDataSource().setLoggedIn(true);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
       } on FirebaseAuthException catch (e) {
         // Set the logged-in status to false in case of login failure
-        await setLoggedIn(false);
+        await SharedPrefDataSource().setLoggedIn(false);
 
         // Handle different authentication exceptions and show appropriate error messages
         String _error = "";
